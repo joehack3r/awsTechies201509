@@ -1,0 +1,62 @@
+# View slideshare at:
+http://www.slideshare.net/joehack3r/serverless-apps
+
+# View demo video at:
+http://youtu.be/i-xokez0ySM
+
+# The following is a reference list to help deploy the serverless application
+# Steps:
+# 
+# 1. Create DynamoDB table
+# 2. Create IAM role restricted to DynamoDB table
+# 3. Create Lambda functions
+# 4. Create API Gateway
+#      Publish endpoint
+#      Test in Postman
+#      Enable CORS
+#        http://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-cors.html
+# 5. Deploy web app to S3
+#      Create S3 bucket
+#      Configure S3 bucket to host web pages
+#      Copy files to S3 bucket
+
+# Reminder: S3 Buckets must adhere to specific naming conventions: http://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
+
+# My Variable Values:
+# Dynamo DB Table Name: myDynamoTable
+# IAM Role Name: myLambdaAppRole
+# API Gateway ID: myUniqueApiGwId
+# S3 Bucket: myS3Bucket
+
+# Update files for own variables
+find . -iname "myApp-*.js" -type f -exec sed -i "s/dynamoTablePlaceholder/myDynamoTable/g" {} \;
+sed -i "s/dynamoTablePlaceholder/myDynamoTable/g" iam_policy.json
+sed -i "s/s3BucketPlaceholder/myS3Bucket/g" s3bucket_website_hosting_policy.json
+
+
+# 1. Create DynamoDB table
+aws dynamodb create-table --table-name myDynamoTable --attribute-definitions AttributeName=id,AttributeType=S --key-schema AttributeName=id,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1
+
+# 2. Create IAM role
+aws iam create-role --role-name myLambdaAppRole --assume-role-policy-document file://iam_trust_policy.json
+aws iam put-role-policy --role-name myLambdaAppRole --policy-name myLambdaApp --policy-document file://iam_policy.json
+
+# 3. Create Lambda functions (done via GUI)
+# 4. Create API Gateway (done via GUI): create resource 'myapp' and deploy to stage 'dev'.
+
+# 5. Deploy web app to S3
+## Create S3 bucket and assign bucket policy
+aws s3 mb s3://myS3Bucket
+aws s3api put-bucket-policy --bucket myS3Bucket --policy file://s3bucket_website_hosting_policy.json
+aws s3api put-bucket-website --bucket myS3Bucket --website-configuration file://s3bucket_website_configuration.json
+## Build and copy web app
+cd webApp
+find . -type f -name "mycontroller.js" -exec sed -i "s/apiGwPlaceholder/myUniqueApiGwId/g" {} \;
+bower install
+npm install
+grunt build
+aws s3 cp dist/ s3://myS3Bucket --recursive
+
+# View app at:
+http://myS3Bucket.s3-website-us-east-1.amazonaws.com
+

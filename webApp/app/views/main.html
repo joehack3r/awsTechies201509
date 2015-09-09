@@ -1,0 +1,48 @@
+<div class="jumbotron" ng-app="webApp" ng-controller="MycontrollerCtrl">
+  <h2>DynamoDB Items</h2>
+  <div>
+  <h3>Add A New Item</h3>
+  <form ng-submit="postForm()">
+      <input type="text" name="id" class="form-control" placeholder="ID" ng-model="formData.id">
+      <input type="text" name="user" class="form-control" placeholder="User" ng-model="formData.user">
+      <input type="text" name="ip" class="form-control" placeholder="IP Address" ng-model="formData.ip">
+      <input type="text" name="text" class="form-control" placeholder="Text" ng-model="formData.text">
+
+    <button type="submit" class="btn btn-success btn-lg btn-block">
+      <span class="glyphicon glyphicon-flash"></span> Add/update item!
+    </button>
+  </form>
+  </div>
+  <div>
+    <h3>Current Items</h3>
+    <table class="table table-bordered ">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>User</th>
+          <th>IP</th>
+          <th>Text</th>
+        </tr>
+      </thead>
+      <tbody>
+        <div class="row">
+          <tr ng-repeat="x in items | orderBy : 'id'">
+            <td class="col-md-2 text-left">
+            {{ x.id }}
+            </td>
+            <td class="col-md-3 text-left">
+            {{ x.user }}
+            </td>
+            <td class="col-md-2 text-left">
+            {{ x.ip }}
+            </td>
+            <td class="col-md-5 text-left">
+            {{ x.text }}
+            </td>
+          </tr>
+        </div>
+      </tbody>
+    </table>
+  </div>
+</div>
+
